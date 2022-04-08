@@ -12,3 +12,10 @@ class Variable(Node):
         if init:
             self.value = np.mat(np.random.normal(0, 0.001, self.dim))
         self.trainable = trainable
+
+    def set_value(self, value):
+        self.value = value
+
+    @property
+    def shape(self):
+        return self.dim
