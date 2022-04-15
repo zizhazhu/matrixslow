@@ -10,7 +10,6 @@ class PerceptionLoss(LossFunction):
     def __init__(self, input_value):
         super().__init__()
         self.inputs.append(input_value)
-        self._shape = input_value.shape
         self.set_output()
 
     def compute(self):
@@ -19,4 +18,5 @@ class PerceptionLoss(LossFunction):
         ))
 
     def get_jacobi(self, input_node):
-        return np.where(input_node.value >= 0.0, 0.0, -1.0)
+        diag = np.where(input_node.value >= 0.0, 0.0, -1.0)
+        return np.diag(diag.ravel())

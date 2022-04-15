@@ -35,10 +35,10 @@ class Node:
         """
         if self.jacobi is None:
             if self is result:
-                # start from 1
-                self.jacobi = np.eye(self.shape[0], self.shape[1])
+                # start from [[1]]
+                self.jacobi = np.eye(self.dimension)
             else:
-                self.jacobi = np.zeros(self.shape)
+                self.jacobi = np.zeros((result.dimension, self.dimension))
                 for output in self.outputs:
                     if output.value is not None:
                         gradient = output.backward(result)
@@ -52,6 +52,10 @@ class Node:
 
     @property
     def shape(self):
-        return self._shape
+        return self.value.shape
+
+    @property
+    def dimension(self):
+        return self.value.shape[0] * self.value.shape[1]
 
 

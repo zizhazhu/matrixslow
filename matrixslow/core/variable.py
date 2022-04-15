@@ -16,6 +16,5 @@ class Variable(Node):
     def set_value(self, value):
         self.value = value
 
-    @property
-    def shape(self):
-        return self.dim
+    def compute(self):
+        pass
