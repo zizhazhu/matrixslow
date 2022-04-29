@@ -40,6 +40,7 @@ class MatMul(Operator):
         if input_node is self.inputs[0]:
             return fill_diagonal(zeros, self.inputs[1].value.T)
         else:
+            # 调整矩阵顺序，让第一个矩阵的列对齐梯度矩阵的列（这两者维度相同）
             jacobi = fill_diagonal(zeros, self.inputs[0].value)
             row_sort = np.arange(self.dimension).reshape(self.shape[::-1]).T.ravel()
             col_sort = np.arange(input_node.dimension).reshape(input_node.shape[::-1]).T.ravel()

@@ -2,14 +2,19 @@ import abc
 
 import numpy as np
 
+from .graph import default_graph
+
 class Node:
 
     def __init__(self):
         self.value = None
-        self.jacobi = None
+        self.grad = None
         self.inputs = []
         self.outputs = set()
         self._shape = None
+
+        self.graph = default_graph
+        self.graph.add_node(self)
 
     def set_output(self):
         for input_unit in self.inputs:
@@ -33,18 +38,18 @@ class Node:
         :param result: target
         :return: gradient
         """
-        if self.jacobi is None:
+        if self.grad is None:
             if self is result:
                 # start from [[1]]
-                self.jacobi = np.eye(self.dimension)
+                self.grad = np.eye(self.dimension)
             else:
-                self.jacobi = np.zeros((result.dimension, self.dimension))
+                self.grad = np.zeros((result.dimension, self.dimension))
                 for output in self.outputs:
                     if output.value is not None:
                         gradient = output.backward(result)
                         jacobi = output.get_jacobi(self)
-                        self.jacobi += gradient * jacobi
-        return self.jacobi
+                        self.grad += gradient * jacobi
+        return self.grad
 
     @abc.abstractmethod
     def get_jacobi(self, input_node):
@@ -57,5 +62,8 @@ class Node:
     @property
     def dimension(self):
         return self.value.shape[0] * self.value.shape[1]
+
+    def clear_jacobi(self):
+        self.grad = None
 
 

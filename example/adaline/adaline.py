@@ -41,3 +41,8 @@ for epoch in range(epochs):
 
         w.backward(loss)
         bias.backward(loss)
+
+        w.set_value(w.value - learning_rate * w.grad.reshape(w.shape))
+        bias.set_value(bias.value - learning_rate * bias.grad.reshape(bias.shape))
+
+        ms.default_graph.clear_jacobi()
