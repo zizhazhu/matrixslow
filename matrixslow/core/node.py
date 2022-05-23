@@ -66,4 +66,10 @@ class Node:
     def clear_jacobi(self):
         self.grad = None
 
+    def reset_values(self, recursive=True):
+        self.value = None
+        if recursive:
+            for output_unit in self.outputs:
+                output_unit.reset_values(recursive)
+
 

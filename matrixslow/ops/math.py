@@ -47,6 +47,21 @@ class MatMul(Operator):
             return jacobi[row_sort, :][:, col_sort]
 
 
+class Step(Operator):
+
+    def __init__(self, a):
+        super().__init__()
+        self.inputs = [a]
+        self.value = None
+        self.set_output()
+
+    def compute(self):
+        self.value = np.where(self.inputs[0].value >= 0, 1.0, 0.0)
+
+    def get_jacobi(self, input_node):
+        return np.zeros((self.dimension, input_node.dimension))
+
+
 def fill_diagonal(to_be_filled, filler):
     factor = int(to_be_filled.shape[0] / filler.shape[0])
     m, n = filler.shape

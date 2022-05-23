@@ -14,7 +14,7 @@ class Variable(Node):
         self.trainable = trainable
 
     def set_value(self, value):
-        self.reset_value()
+        self.reset_values()
         self.value = value
 
     def compute(self):

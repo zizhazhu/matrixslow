@@ -26,11 +26,12 @@ w = ms.core.Variable(dim=(3, 1), init=True, trainable=True)
 bias = ms.core.Variable(dim=(1, 1), init=True, trainable=True)
 
 output = ms.ops.Add(ms.ops.MatMul(x, w), bias)
+predict = ms.ops.Step(output)
 
 loss = ms.ops.loss.PerceptionLoss(ms.ops.MatMul(y, output))
 
 learning_rate = 0.0001
-epochs = 1
+epochs = 10
 for epoch in range(epochs):
     for i in range(len(train_data)):
         features = np.mat(train_data[i,:-1])
@@ -46,3 +47,15 @@ for epoch in range(epochs):
         bias.set_value(bias.value - learning_rate * bias.grad.reshape(bias.shape))
 
         ms.default_graph.clear_jacobi()
+
+    pred = []
+
+    for i in range(len(train_data)):
+        features = np.mat(train_data[i,:-1])
+        x.set_value(features)
+        predict.forward()
+        pred.append(predict.value[0, 0])
+
+    pred = np.array(pred) * 2 - 1
+    accuracy = (train_data[:, -1] == pred).mean()
+    print(f'Epoch {epoch}: {accuracy}')
