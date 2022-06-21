@@ -13,6 +13,7 @@ female_bfrs = np.random.normal(22, 2, 500)
 male_labels = [1] * 500
 female_labels = [-1] * 500
 
+# 把所有男女性别的数据拼合在一起，并打乱顺序
 train_data = np.array([np.concatenate((male_heights, female_heights)),
                        np.concatenate((male_weights, female_weights)),
                        np.concatenate((male_bfrs, female_bfrs)),
@@ -20,11 +21,13 @@ train_data = np.array([np.concatenate((male_heights, female_heights)),
                        ]).T
 np.random.shuffle(train_data)
 
+# 采用和batch模式一致的维度定义，每一行是一条样本
 x = ms.core.Variable(dim=(1, 3), init=False, trainable=False)
 y = ms.core.Variable(dim=(1, 1), init=False, trainable=False)
 w = ms.core.Variable(dim=(3, 1), init=True, trainable=True)
 bias = ms.core.Variable(dim=(1, 1), init=True, trainable=True)
 
+# 按照batch模式排列，所以是XW+b
 output = ms.ops.Add(ms.ops.MatMul(x, w), bias)
 predict = ms.ops.Step(output)
 
