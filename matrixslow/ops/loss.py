@@ -6,6 +6,7 @@ from ..core import Node
 class LossFunction(Node):
     pass
 
+
 class PerceptionLoss(LossFunction):
     def __init__(self, input_value):
         super().__init__()
