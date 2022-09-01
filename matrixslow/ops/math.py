@@ -4,7 +4,8 @@ from ..core import Node
 
 
 class Operator(Node):
-    pass
+    def __init__(self):
+        super().__init__()
 
 
 class Add(Operator):
@@ -45,6 +46,22 @@ class MatMul(Operator):
             row_sort = np.arange(self.dimension).reshape(self.shape[::-1]).T.ravel()
             col_sort = np.arange(input_node.dimension).reshape(input_node.shape[::-1]).T.ravel()
             return jacobi[row_sort, :][:, col_sort]
+
+
+class Multiply(Operator):
+    def __init__(self, a, b):
+        super().__init__()
+        self.inputs = [a, b]
+        self.set_output()
+
+    def compute(self):
+        self.value = np.multiply(self.inputs[0].value, self.inputs[1].value)
+
+    def get_jacobi(self, input_node):
+        if input_node is self.inputs[0]:
+            return np.diag(self.inputs[1].value.A1)
+        else:
+            return np.diag(self.inputs[0].value.A1)
 
 
 class Step(Operator):

@@ -41,12 +41,14 @@ class Node:
         if self.grad is None:
             if self is result:
                 # start from [[1]]
-                self.grad = np.eye(self.dimension)
+                self.grad = np.mat(np.eye(self.dimension))
             else:
-                self.grad = np.zeros((result.dimension, self.dimension))
+                self.grad = np.mat(np.zeros((result.dimension, self.dimension)))
                 for output in self.outputs:
                     if output.value is not None:
+                        # 后继节点积累下来的梯度
                         gradient = output.backward(result)
+                        # 后继节点到当前节点的梯度
                         jacobi = output.get_jacobi(self)
                         self.grad += gradient * jacobi
         return self.grad

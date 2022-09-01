@@ -1,2 +1,2 @@
-from .math import Add, MatMul, Step
+from .math import Add, MatMul, Step, Multiply
 import matrixslow.ops.loss
