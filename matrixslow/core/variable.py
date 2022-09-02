@@ -15,7 +15,13 @@ class Variable(Node):
 
     def set_value(self, value):
         self.reset_values()
+        if value.shape != self.dim:
+            raise ValueError(f'Variable need shape {self.dim} not {value.shape}')
         self.value = value
 
     def compute(self):
         pass
+
+    @property
+    def shape(self):
+        return self.dim
