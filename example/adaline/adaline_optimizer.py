@@ -22,7 +22,7 @@ class Adaline:
 
 # hyper-parameters
 learning_rate = 0.0001
-epochs_num = 50
+epochs_num = 100
 batch_size = 8
 
 train_set = gen_data()
@@ -31,7 +31,7 @@ model = Adaline()
 output = model.forward()
 predict = ms.ops.Step(output)
 loss = ms.ops.loss.PerceptionLoss(ms.ops.Multiply(model.label, output))
-optimizer = ms.optimizer.GradientDescentMomentum(ms.default_graph, loss, learning_rate)
+optimizer = ms.optimizer.AdaGrad(ms.default_graph, loss, learning_rate)
 
 cur_batch_size = 0
 for epoch in range(epochs_num):

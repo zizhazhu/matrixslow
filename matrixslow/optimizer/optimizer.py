@@ -1,5 +1,7 @@
 import abc
 
+import numpy as np
+
 from ..core.variable import Variable
 
 class Optimizer:
@@ -84,3 +86,23 @@ class GradientDescentMomentum(Optimizer):
                 self.v[node] = self.momentum * self.v[node] + gradient_apply
             # w = w - v
             node.set_value(node.value - self.v[node])
+
+
+class AdaGrad(Optimizer):
+
+    def __init__(self, graph, target, learning_rate=0.01):
+        Optimizer.__init__(self, graph, target)
+        self.learning_rate = learning_rate
+        # history second-order momentum
+        self.s = {}
+
+    def _update(self):
+        for node, gradient in self.acc_gradient.items():
+            gradient_apply = gradient / self.acc_no
+
+            if node not in self.s:
+                self.s[node] = np.power(gradient_apply, 2)
+            else:
+                self.s[node] += np.power(gradient_apply, 2)
+
+            node.set_value(node.value - self.learning_rate * gradient_apply / (1e-10 + np.sqrt(self.s[node])))
