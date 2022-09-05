@@ -50,6 +50,8 @@ class Optimizer:
         # TODO: 暂时用不上，先不实现
         pass
 
+    def get_gradient(self, node):
+        return self.acc_gradient[node] / self.acc_no
 
 
 class GradientDescent(Optimizer):
@@ -57,3 +59,9 @@ class GradientDescent(Optimizer):
     def __init__(self, graph, target, learning_rate=0.01):
         Optimizer.__init__(self, graph, target)
         self.learning_rate = learning_rate
+
+    def _update(self):
+        for node, gradient in self.acc_gradient.items():
+            gradient_apply = self.learning_rate * gradient / self.acc_no
+            node.set_value(node.value - gradient_apply)
+

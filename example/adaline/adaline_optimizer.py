@@ -59,7 +59,7 @@ for epoch in range(epochs_num):
         pred.extend(predict.value.ravel())
 
     pred = np.array(pred) * 2 - 1
-    accuracy = (train_set[:, -1] == pred).astype(np.int).sum() / len(train_set)
+    accuracy = (train_set[:, -1] == pred).astype(int).sum() / len(train_set)
     print(f"epoch: {epoch+1}, accuracy: {accuracy:.3}")
 
 
