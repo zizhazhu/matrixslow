@@ -1,7 +1,6 @@
 import abc
 
 from ..core.variable import Variable
-from ..core.node import Node
 
 class Optimizer:
 
@@ -65,3 +64,23 @@ class GradientDescent(Optimizer):
             gradient_apply = self.learning_rate * gradient / self.acc_no
             node.set_value(node.value - gradient_apply)
 
+
+class GradientDescentMomentum(Optimizer):
+
+    def __init__(self, graph, target, learning_rate=0.01, momentum=0.9):
+        Optimizer.__init__(self, graph, target)
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        # history momentum
+        self.v = dict()
+
+    def _update(self):
+        for node, gradient in self.acc_gradient.items():
+            gradient_apply = self.learning_rate * gradient / self.acc_no
+            if node not in self.v:
+                self.v[node] = gradient_apply
+            else:
+                # v = m * v + \eta * g
+                self.v[node] = self.momentum * self.v[node] + gradient_apply
+            # w = w - v
+            node.set_value(node.value - self.v[node])

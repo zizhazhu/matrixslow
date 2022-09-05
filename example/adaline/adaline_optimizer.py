@@ -31,7 +31,7 @@ model = Adaline()
 output = model.forward()
 predict = ms.ops.Step(output)
 loss = ms.ops.loss.PerceptionLoss(ms.ops.Multiply(model.label, output))
-optimizer = ms.optimizer.GradientDescent(ms.default_graph, loss, learning_rate)
+optimizer = ms.optimizer.GradientDescentMomentum(ms.default_graph, loss, learning_rate)
 
 cur_batch_size = 0
 for epoch in range(epochs_num):

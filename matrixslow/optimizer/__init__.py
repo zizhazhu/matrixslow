@@ -1,1 +1,1 @@
-from .optimizer import GradientDescent
+from .optimizer import GradientDescent, GradientDescentMomentum
