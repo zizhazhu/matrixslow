@@ -24,6 +24,7 @@ class Optimizer:
         self.target.forward()
 
         for node in self.graph.nodes:
+            # 反向传播遍历可训练的节点
             if isinstance(node, Variable) and node.trainable:
                 node.backward(self.target)
                 # Prob: 为什么要转置，在矩阵有1维是1时没有区别
@@ -106,3 +107,57 @@ class AdaGrad(Optimizer):
                 self.s[node] += np.power(gradient_apply, 2)
 
             node.set_value(node.value - self.learning_rate * gradient_apply / (1e-10 + np.sqrt(self.s[node])))
+
+
+class RMSProp(Optimizer):
+    def __init__(self, graph, target, learning_rate=0.01, beta=0.9):
+        Optimizer.__init__(self, graph, target)
+        self.learning_rate = learning_rate
+        self.beta = beta
+        self.s = {}
+
+    def _update(self):
+        for node, gradient in self.acc_gradient.items():
+            gradient_apply = gradient / self.acc_no
+
+            # s = \beta * s + (1 - \beta) * g^2
+            if node not in self.s:
+                self.s[node] = (1 - self.beta) * np.power(gradient_apply, 2)
+            else:
+                self.s[node] = self.beta * self.s[node] + (1 - self.beta) * np.power(gradient_apply, 2)
+
+            node.set_value(node.value - self.learning_rate * gradient_apply / (1e-10 + np.sqrt(self.s[node])))
+
+
+class Adam(Optimizer):
+    def __init__(self, graph, target, learning_rate=0.01, beta_1=0.9, beta_2=0.99):
+        Optimizer.__init__(self, graph, target)
+        self.learning_rate = learning_rate
+        self.beta_1 = beta_1
+        self.beta_2 = beta_2
+        self.m = {}
+        self.v = {}
+        self.step = 0
+
+    def _update(self):
+        for node, gradient in self.acc_gradient.items():
+            gradient_apply = gradient / self.acc_no
+
+            # m = \beta_1 * m + (1 - \beta_1) * g
+            # v = \beta_2 * s + (1 - \beta_2) * g^2
+            if node not in self.m:
+                self.m[node] = (1 - self.beta_1) * gradient_apply
+                self.v[node] = (1 - self.beta_2) * np.power(gradient_apply, 2)
+            else:
+                self.m[node] = self.beta_1 * self.m[node] + (1 - self.beta_1) * gradient_apply
+                self.v[node] = self.beta_2 * self.v[node] + (1 - self.beta_2) * np.power(gradient_apply, 2)
+            self.step += 1
+
+            # 平滑初期的值
+            if self.step > 50:
+                m_ = self.m[node]
+                v_ = self.v[node]
+            else:
+                m_ = self.m[node] / (1 - np.power(self.beta_1, self.step))
+                v_ = self.v[node] / (1 - np.power(self.beta_2, self.step))
+            node.set_value(node.value - self.learning_rate * m_ / (1e-10 + np.sqrt(v_)))

@@ -1,1 +1,1 @@
-from .optimizer import GradientDescent, GradientDescentMomentum, AdaGrad
+from .optimizer import GradientDescent, GradientDescentMomentum, AdaGrad, RMSProp, Adam
