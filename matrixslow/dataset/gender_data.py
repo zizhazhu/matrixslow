@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def gen_data(shuffle=True):
     male_heights = np.random.normal(171, 6, 500)
     female_heights = np.random.normal(158, 5, 500)
