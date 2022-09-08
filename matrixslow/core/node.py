@@ -17,6 +17,7 @@ class Node:
         self.graph.add_node(self)
 
     def set_output(self):
+        # 把当前节点标记到输入节点的输出节点
         for input_unit in self.inputs:
             input_unit.outputs.add(self)
 

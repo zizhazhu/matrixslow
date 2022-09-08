@@ -79,6 +79,23 @@ class Step(Operator):
         return np.zeros((self.dimension, input_node.dimension))
 
 
+class Sigmoid(Operator):
+
+    def __init__(self, a):
+        super().__init__()
+        self.inputs = [a]
+        self.value = None
+        self.set_output()
+
+    def compute(self):
+        x = self.inputs[0].value
+        self.value = np.mat(1.0 / (1.0 + np.power(np.e, np.where(-x > 1e2, 1e2, -x))))
+
+    def get_jacobi(self, parent):
+        # 展开成1维Array再对角化
+        return np.diag(np.mat(np.multiply(self.value, 1 - self.value)).A1)
+
+
 def fill_diagonal(to_be_filled, filler):
     factor = int(to_be_filled.shape[0] / filler.shape[0])
     m, n = filler.shape
