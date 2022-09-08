@@ -38,5 +38,5 @@ class LogLoss(LossFunction):
 
     def get_jacobi(self, input_node):
         x = input_node.value
-        diag = -1 / (1 + np.where(np.e, np.where(x > 1e2, 1e2, x)))
+        diag = -1 / (1 + np.power(np.e, np.where(x > 1e2, 1e2, x)))
         return np.diag(diag.ravel())

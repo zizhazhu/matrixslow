@@ -1,7 +1,8 @@
 import numpy as np
 
 
-def gen_data(shuffle=True):
+def gen_data(shuffle=True, seed=0):
+    np.random.seed(seed)
     male_heights = np.random.normal(171, 6, 500)
     female_heights = np.random.normal(158, 5, 500)
 

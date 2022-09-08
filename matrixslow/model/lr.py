@@ -9,5 +9,5 @@ class LR:
 
     def forward(self, x):
         logits = ms.ops.Add(ms.ops.MatMul(self.w, x), self.b)
-        predict = ms.ops.Logistic(output)
+        predict = ms.ops.Sigmoid(logits)
         return logits, predict
