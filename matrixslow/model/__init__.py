@@ -1,1 +1,1 @@
-from .lr import LR
+from .lr import LR, MultiLabelLR

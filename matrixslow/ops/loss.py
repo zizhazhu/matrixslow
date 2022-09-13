@@ -1,6 +1,7 @@
 import numpy as np
 
 from ..core import Node
+from .math import *
 
 
 class LossFunction(Node):
@@ -40,3 +41,24 @@ class LogLoss(LossFunction):
         x = input_node.value
         diag = -1 / (1 + np.power(np.e, np.where(x > 1e2, 1e2, x)))
         return np.diag(diag.ravel())
+
+
+class CrossEntropyWithSoftMax(LossFunction):
+
+    def __init__(self, logits, label):
+        super().__init__()
+        self.inputs = [logits, label]
+        self.set_output()
+
+    def compute(self):
+        prob = Softmax.softmax(self.inputs[0].value)
+        self.value = np.mat(
+            -np.sum(np.multiply(self.inputs[1].value, np.log(prob + 1e-12)))
+        )
+
+    def get_jacobi(self, input_node):
+        prob = Softmax.softmax(self.inputs[0].value)
+        if input_node is self.inputs[0]:
+            return (prob - self.inputs[1].value).T
+        else:
+            return (-np.log(prob + 1e-12)).T

@@ -84,7 +84,6 @@ class Sigmoid(Operator):
     def __init__(self, a):
         super().__init__()
         self.inputs = [a]
-        self.value = None
         self.set_output()
 
     def compute(self):
@@ -94,6 +93,26 @@ class Sigmoid(Operator):
     def get_jacobi(self, parent):
         # 展开成1维Array再对角化
         return np.diag(np.mat(np.multiply(self.value, 1 - self.value)).A1)
+
+
+class Softmax(Operator):
+
+    @staticmethod
+    def softmax(a):
+        a[a > 1e2] = 1e2
+        ep = np.power(np.e, a)
+        return ep / np.sum(ep)
+
+    def __init__(self, a):
+        super().__init__()
+        self.inputs = [a]
+        self.set_output()
+
+    def compute(self):
+        self.value = Softmax.softmax(self.inputs[0].value)
+
+    def get_jacobi(self, input_node):
+        raise NotImplementedError("Don't use SoftMax's get_jacobi")
 
 
 def fill_diagonal(to_be_filled, filler):
