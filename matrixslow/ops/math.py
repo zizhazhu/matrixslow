@@ -115,6 +115,21 @@ class Softmax(Operator):
         raise NotImplementedError("Don't use SoftMax's get_jacobi")
 
 
+class ReLU(Operator):
+
+    def __init__(self, a, slope=0.1):
+        super().__init__()
+        self.inputs = [a]
+        self.slope = slope
+        self.set_output()
+
+    def compute(self):
+        self.value = np.mat(np.where(self.inputs[0].value >= 0, self.inputs[0].value, self.slope * self.inputs[0].value))
+
+    def get_jacobi(self, input_node):
+        return np.diag(np.where(input_node.value.A1 >= 0, 1.0, self.slope))
+
+
 def fill_diagonal(to_be_filled, filler):
     factor = int(to_be_filled.shape[0] / filler.shape[0])
     m, n = filler.shape
