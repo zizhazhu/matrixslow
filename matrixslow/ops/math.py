@@ -1,11 +1,6 @@
 import numpy as np
 
-from ..core import Node
-
-
-class Operator(Node):
-    def __init__(self):
-        super().__init__()
+from .operator import Operator
 
 
 class Add(Operator):
