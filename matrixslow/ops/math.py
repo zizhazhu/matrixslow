@@ -4,10 +4,9 @@ from .operator import Operator
 
 
 class Add(Operator):
-    def __init__(self, a, b):
+    def __init__(self, *args):
         super().__init__()
-        self.inputs = [a, b]
-        self.value = None
+        self.inputs = args
         self.set_output()
 
     def compute(self):

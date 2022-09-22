@@ -35,3 +35,21 @@ class MultiLabelLR:
         logits = ms.ops.Add(ms.ops.MatMul(self.w, x), self.b)
         predict = ms.ops.Softmax(logits)
         return logits, predict
+
+
+class LRQuadratic:
+
+    def __init__(self, dim):
+        self.dim = dim
+        self.w = ms.core.Variable(dim=(1, dim), init=True, trainable=True)
+        self.W = ms.core.Variable(dim=(dim, dim), init=True, trainable=True)
+        self.b = ms.core.Variable(dim=(1, 1), init=True, trainable=True)
+
+    def forward(self, x):
+
+        logits = ms.ops.Add(ms.ops.MatMul(self.w, x),
+                            ms.ops.MatMul(ms.ops.Reshape(x, shape=(1, self.dim)), ms.ops.MatMul(self.W, x)),
+                            self.b,
+                            )
+        predict = ms.ops.Sigmoid(logits)
+        return logits, predict
