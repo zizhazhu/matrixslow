@@ -26,16 +26,16 @@ class Reshape(Operator):
 
 class Concat(Operator):
 
-    def __init__(self, node, axis=0):
+    def __init__(self, nodes, axis=0):
         super().__init__()
-        self.inputs = [node]
+        self.inputs = list(nodes)
         self.axis = axis
         self.set_output()
 
     def compute(self):
         self.value = np.concatenate(
-            (p.value.flatten() for p in self.inputs), axis=self.axis,
-        ).T
+            [node.value for node in self.inputs], axis=self.axis,
+        )
 
     def get_jacobi(self, input_node):
         dimensions = [p.dimension for p in self.inputs]

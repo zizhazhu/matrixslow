@@ -19,7 +19,7 @@ class LR:
                 ms.ops.MatMul(x, ms.ops.Reshape(x, shape=(1, self.dim))),
                 shape=(self.dim * self.dim, 1),
             )
-            x = ms.ops.Concat(x, x_2)
+            x = ms.ops.Concat([x, x_2])
         logits = ms.ops.Add(ms.ops.MatMul(self.w, x), self.b)
         predict = ms.ops.Sigmoid(logits)
         return logits, predict

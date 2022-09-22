@@ -4,6 +4,7 @@ import numpy as np
 
 from ..core.variable import Variable
 
+
 class Optimizer:
 
     def __init__(self, graph, target, learning_rate=0.01):
