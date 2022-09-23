@@ -28,8 +28,8 @@ class PerceptionLoss(LossFunction):
 
 class LogLoss(LossFunction):
 
-    def __init__(self, input_value):
-        super().__init__()
+    def __init__(self, input_value, name='logloss'):
+        super().__init__(name)
         self.inputs = [input_value]
         self.set_output()
 

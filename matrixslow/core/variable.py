@@ -5,8 +5,8 @@ from .node import Node
 
 class Variable(Node):
 
-    def __init__(self, dim, init=None, trainable=True, **kwargs):
-        super().__init__()
+    def __init__(self, dim, init=None, trainable=True, name='var'):
+        super().__init__(name)
         self.dim = dim
         # TODO: use initializer
         if init:

@@ -1,12 +1,13 @@
 import matrixslow as ms
 from matrixslow.dataset.circle import gen_data
 
-features, labels = gen_data(600, noise_dimension=18)
+dim = 2
+features, labels = gen_data(600, noise_dimension=dim-2)
 
-x = ms.core.Variable(dim=(20, 1), init=False, trainable=False)
-label = ms.core.Variable(dim=(1, 1), init=False, trainable=False)
+x = ms.core.Variable(dim=(dim, 1), init=False, trainable=False, name='x')
+label = ms.core.Variable(dim=(1, 1), init=False, trainable=False, name='label')
 
-model = ms.model.FM(dim=20, k=2)
+model = ms.model.FM(dim=dim, k=3)
 logits, predict = model.forward(x)
 
 loss = ms.ops.loss.LogLoss(ms.ops.Multiply(label, logits))
