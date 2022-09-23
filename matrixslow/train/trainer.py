@@ -47,5 +47,6 @@ class Trainer:
                 pred = np.array(pred).argmax(axis=1)
             else:
                 pred = (np.array(pred) > 0.5).astype(int) * 2 - 1
+                pred = np.squeeze(pred)
             acc = (labels == pred).astype(int).sum() / len(features)
             print(f"Epoch: {epoch}, accuracy: {acc:.3f}")

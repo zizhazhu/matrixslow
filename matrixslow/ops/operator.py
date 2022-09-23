@@ -4,8 +4,8 @@ from matrixslow.core import Node
 
 
 class Operator(Node):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name='op'):
+        super().__init__(name)
 
 
 class Reshape(Operator):

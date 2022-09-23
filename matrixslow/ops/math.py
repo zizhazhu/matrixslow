@@ -4,8 +4,8 @@ from .operator import Operator
 
 
 class Add(Operator):
-    def __init__(self, *args):
-        super().__init__()
+    def __init__(self, *args, name='add'):
+        super().__init__(name)
         self.inputs = args
         self.set_output()
 
@@ -20,8 +20,8 @@ class Add(Operator):
         
 
 class MatMul(Operator):
-    def __init__(self, a, b):
-        super().__init__()
+    def __init__(self, a, b, name='MatMul'):
+        super().__init__(name)
         self.inputs = [a, b]
         self.value = None
         self.set_output()
@@ -122,6 +122,22 @@ class ReLU(Operator):
 
     def get_jacobi(self, input_node):
         return np.diag(np.where(input_node.value.A1 >= 0, 1.0, self.slope))
+
+
+class Transpose(Operator):
+    def __init__(self, node, name='transpose'):
+        super().__init__(name)
+        self.inputs = [node]
+        self.set_output()
+
+    def compute(self):
+        self.value = np.transpose(self.inputs[0].value)
+
+    def get_jacobi(self, input_node):
+        eye = np.eye(self.dimension)
+        row_sort = np.arange(self.dimension).reshape(self.shape[::-1]).T.ravel()
+        jacobi = eye[row_sort, :]
+        return jacobi
 
 
 def fill_diagonal(to_be_filled, filler):

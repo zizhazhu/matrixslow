@@ -6,7 +6,8 @@ from .graph import default_graph
 
 class Node:
 
-    def __init__(self):
+    def __init__(self, name='node'):
+        self._name = name
         self.value = None
         self.grad = None
         self.inputs = []
@@ -22,7 +23,7 @@ class Node:
             input_unit.outputs.add(self)
 
     def __repr__(self):
-        return repr(self.value)
+        return f'{self._name}: {repr(self.value)}'
 
     def forward(self):
         for node in self.inputs:
