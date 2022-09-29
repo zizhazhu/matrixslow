@@ -1,9 +1,10 @@
+# TODO: finish
 import matrixslow as ms
-from matrixslow.dataset.classification import gen_data
+from matrixslow.dataset.titanic import gen_data
 
-dimension = 60
-features, labels = gen_data(600)
+features, labels = gen_data(file='./data/titanic.csv')
 
+dimension = features.shape[1]
 x = ms.core.Variable(dim=(dimension, 1), init=False, trainable=False)
 y = ms.core.Variable(dim=(1, 1), init=False, trainable=False)
 
