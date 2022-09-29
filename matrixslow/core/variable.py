@@ -7,7 +7,7 @@ class Variable(Node):
 
     def __init__(self, dim, init=None, trainable=True, name='var'):
         super().__init__(name)
-        self.dim = dim
+        self.dim = tuple(dim)
         # TODO: use initializer
         if init:
             self.value = np.mat(np.random.normal(0, 0.001, self.dim))

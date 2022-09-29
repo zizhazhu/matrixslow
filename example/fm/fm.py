@@ -12,8 +12,8 @@ logits, predict = model.forward(x)
 
 loss = ms.ops.loss.LogLoss(ms.ops.Multiply(label, logits))
 
-learning_rate = 0.001
-batch_size = 16
+learning_rate = 0.0001
+batch_size = 256
 nepochs = 50
 
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)

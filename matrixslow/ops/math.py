@@ -1,5 +1,6 @@
 import numpy as np
 
+import matrixslow as ms
 from .operator import Operator
 
 
@@ -43,8 +44,12 @@ class MatMul(Operator):
 
 
 class Multiply(Operator):
-    def __init__(self, a, b):
-        super().__init__()
+    def __init__(self, a, b, name='Multiply'):
+        super().__init__(name=name)
+        if not isinstance(b, ms.core.Node):
+            b_value = np.mat(b)
+            b = ms.core.Variable([1, 1], init=False, trainable=False)
+            b.set_value(b_value)
         self.inputs = [a, b]
         self.set_output()
 
@@ -122,6 +127,20 @@ class ReLU(Operator):
 
     def get_jacobi(self, input_node):
         return np.diag(np.where(input_node.value.A1 >= 0, 1.0, self.slope))
+
+
+class Square(Operator):
+
+    def __init__(self, a, name='square'):
+        super().__init__(name=name)
+        self.inputs = [a]
+        self.set_output()
+
+    def compute(self):
+        self.value = np.square(self.inputs[0].value)
+
+    def get_jacobi(self, input_node):
+        return np.diag(self.value * 2)
 
 
 class Transpose(Operator):
