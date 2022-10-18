@@ -13,20 +13,29 @@ class Trainer:
         self.batch_size = batch_size
         self._is_multi_class = is_multi_class
 
-    def train(self, features, labels, n_epochs=10, one_hot=False):
+    def train_and_test(self, features, labels, test_features=None, test_labels=None, n_epochs=10, one_hot=False):
         if one_hot is True:
             one_hot_encoder = OneHotEncoder(sparse=False)
             train_label = one_hot_encoder.fit_transform(labels.reshape(-1, 1))
         else:
             train_label = labels
 
+        if test_features is None or test_labels is None:
+            test_features = features
+            test_labels = train_label
+
         for epoch in range(n_epochs):
             batch_count = 0
             for i in tqdm(range(len(features))):
-                feature = np.mat(features[i]).T
-                label = np.mat(train_label[i]).T
+                if isinstance(self.x, list):
+                    for j, x in enumerate(self.x):
+                        feature = np.mat(features[i][j]).T
+                        x.set_value(feature)
+                else:
+                    feature = np.mat(features[i]).T
+                    self.x.set_value(feature)
 
-                self.x.set_value(feature)
+                label = np.mat(train_label[i]).T
                 self.y.set_value(label)
 
                 self.optimizer.one_step()
@@ -37,9 +46,14 @@ class Trainer:
                     batch_count = 0
 
             pred = []
-            for i in range(len(features)):
-                feature = np.mat(features[i]).T
-                self.x.set_value(feature)
+            for i in range(len(test_features)):
+                if isinstance(self.x, list):
+                    for j, x in enumerate(self.x):
+                        feature = np.mat(test_features[i][j]).T
+                        x.set_value(feature)
+                else:
+                    feature = np.mat(test_features[i]).T
+                    self.x.set_value(feature)
                 self.predict.forward()
                 pred.append(self.predict.value.A.ravel())
 
@@ -48,5 +62,5 @@ class Trainer:
             else:
                 pred = (np.array(pred) > 0.5).astype(int) * 2 - 1
                 pred = np.squeeze(pred)
-            acc = (labels == pred).astype(int).sum() / len(features)
+            acc = (test_labels == pred).astype(int).sum() / len(test_features)
             print(f"Epoch: {epoch}, accuracy: {acc:.3f}")

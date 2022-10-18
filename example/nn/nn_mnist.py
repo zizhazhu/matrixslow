@@ -24,4 +24,4 @@ n_epochs = 30
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
 trainer = ms.train.Trainer(x, y, predict, optimizer)
-trainer.train(features, labels)
+trainer.train_and_test(features, labels)

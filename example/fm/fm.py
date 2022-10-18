@@ -19,4 +19,4 @@ nepochs = 50
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
 trainer = ms.train.Trainer(x, label, predict, optimizer)
-trainer.train(features, labels, n_epochs=nepochs)
+trainer.train_and_test(features, labels, n_epochs=nepochs)

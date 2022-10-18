@@ -10,9 +10,9 @@ def get_sequence_data(dimension=10, length=10):
     data = []
     for i in range(2):
         candidate = candidates[i]
-        # gen 500 random
+        # 基于原来的函数扩展出500种随机
         for j in range(500):
-            # expand dimensions
+            # 原来的y加上dimension维度的随机值，扩展维度
             sequence = candidate + np.random.normal(0, 0.6, (len(candidate), dimension))
             label = np.array([int(i == k) for k in range(2)])
             data.append(np.c_[sequence.reshape(1, -1), label.reshape(1, -1)])
