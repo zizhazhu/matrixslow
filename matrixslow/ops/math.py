@@ -159,6 +159,27 @@ class Transpose(Operator):
         return jacobi
 
 
+class Welding(Operator):
+    def __init__(self, name='welding'):
+        super().__init__(name)
+        self.inputs = []
+        self.set_output()
+
+    def compute(self):
+        self.value = self.inputs[0].value
+
+    def get_jacobi(self, input_node):
+        return np.mat(np.eye(self.dimension))
+
+    def weld(self, node):
+
+        if len(self.inputs) > 0:
+            self.inputs[0].outputs.remove(self)
+        self.inputs.clear()
+        self.inputs.append(node)
+        node.outputs.add(self)
+
+
 def fill_diagonal(to_be_filled, filler):
     factor = int(to_be_filled.shape[0] / filler.shape[0])
     m, n = filler.shape
