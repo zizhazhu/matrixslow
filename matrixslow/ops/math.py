@@ -180,6 +180,53 @@ class Welding(Operator):
         node.outputs.add(self)
 
 
+class Convolve(Operator):
+    def __init__(self, img, kernel, name='convolve'):
+        super().__init__(name)
+        self.inputs = [img, kernel]
+        self.set_output()
+        self.padded = None
+
+    def compute(self):
+        img = self.inputs[0].value
+        kernel = self.inputs[1].value
+        w, h = img.shape
+        kw, kh = kernel.shape
+        hkw, hkh = kw // 2, kh // 2
+
+        pw, ph = w + kw - 1, h + kh - 1
+        self.padded = np.mat(np.zeros((pw, ph)))
+        self.padded[hkw:hkw + w, hkh:hkh + h] = img
+        self.value = np.mat(np.zeros((w, h)))
+
+        for i in range(hkw, hkw + w):
+            for j in range(hkh, hkh + h):
+                self.value[i - hkw, j - hkh] = np.sum(np.multiply(
+                    self.padded[i - hkw:i + hkw + 1, j - hkh:j + hkh + 1], kernel))
+
+    def get_jacobi(self, input_node):
+        img = self.inputs[0].value
+        kernel = self.inputs[1].value
+        w, h = img.shape
+        kw, kh = kernel.shape
+        hkw, hkh = kw // 2, kh // 2
+        pw, ph = w + kw - 1, h + kh - 1
+        jacobi = []
+        # 计算有问题
+        if input_node is self.inputs[0]:
+            for i in range(hkw, hkw + w):
+                for j in range(hkh, hkh + h):
+                    mask = np.mat(np.zeros(pw, ph))
+                    mask[i - hkw:i - hkw + kw, j - hkh:j - hkh + kh] = kernel
+                    jacobi.append(mask[hkw:hkw + w, hkh:hkh + h].A1)
+        else:
+            for i in range(hkw, hkw + w):
+                for j in range(hkh, hkh + h):
+                    jacobi.append(
+                        self.padded[i - hkw:i - hkw + kw, j - hkh:j - hkh + kh].A1)
+        return np.mat(jacobi)
+
+
 def fill_diagonal(to_be_filled, filler):
     factor = int(to_be_filled.shape[0] / filler.shape[0])
     m, n = filler.shape
