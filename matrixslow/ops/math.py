@@ -227,6 +227,22 @@ class Convolve(Operator):
         return np.mat(jacobi)
 
 
+class ScalarMultiply(Operator):
+    def __init__(self, scalar, matrix, name='scalar_multiply'):
+        super().__init__(name)
+        self.inputs = [scalar, matrix]
+        self.set_output()
+
+    def compute(self):
+        self.value = np.multiply(self.inputs[0].value, self.inputs[1].value)
+
+    def get_jacobi(self, input_node):
+        if input_node is self.inputs[0]:
+            return self.inputs[1].value.flatten().T
+        else:
+            return np.mat(np.eye(self.inputs[1].dimension)) * self.inputs[0].value[0, 0]
+
+
 def fill_diagonal(to_be_filled, filler):
     factor = int(to_be_filled.shape[0] / filler.shape[0])
     m, n = filler.shape
