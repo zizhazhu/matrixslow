@@ -216,7 +216,7 @@ class Convolve(Operator):
         if input_node is self.inputs[0]:
             for i in range(hkw, hkw + w):
                 for j in range(hkh, hkh + h):
-                    mask = np.mat(np.zeros(pw, ph))
+                    mask = np.mat(np.zeros((pw, ph)))
                     mask[i - hkw:i - hkw + kw, j - hkh:j - hkh + kh] = kernel
                     jacobi.append(mask[hkw:hkw + w, hkh:hkh + h].A1)
         else:
@@ -225,6 +225,52 @@ class Convolve(Operator):
                     jacobi.append(
                         self.padded[i - hkw:i - hkw + kw, j - hkh:j - hkh + kh].A1)
         return np.mat(jacobi)
+
+
+class MaxPooling(Operator):
+
+    def __init__(self, *inputs, size, stride, name='max_pooling'):
+        super().__init__()
+        self.inputs = inputs
+        self._stride = tuple(stride)
+        self._size = tuple(size)
+        self.flag = None
+        self.set_output()
+
+    def compute(self):
+        image = self.inputs[0].value
+        w, h = image.shape
+        dim = w * h
+        sw, sh = self._stride
+        kw, kh = self._size
+        hkw, hkh = kw // 2, kh // 2
+
+        result = []
+        flag = []
+
+        for i in range(0, w, sw):
+            row = []
+            for j in range(0, h, sh):
+                top, bottom = max(0, i - hkw), min(w, i + hkw + 1)
+                left, right = max(0, j - hkh), min(h, j + hkh + 1)
+                mask = image[top:bottom, left:right]
+                row.append(np.max(mask))
+
+                pos = np.argmax(mask)
+                w_width = right - left
+                offset_w, offset_h = top + pos // w_width, left + pos % w_width
+                offset = offset_w * w + offset_h
+                tmp = np.zeros(dim)
+                tmp[offset] = 1
+                flag.append(tmp)
+
+            result.append(row)
+
+        self.value = np.mat(result)
+        self.flag = np.mat(flag)
+
+    def get_jacobi(self, input_node):
+        return self.flag
 
 
 class ScalarMultiply(Operator):

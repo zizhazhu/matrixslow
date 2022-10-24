@@ -33,7 +33,7 @@ class Trainer:
                         x.set_value(feature)
                 else:
                     feature = np.mat(features[i]).T
-                    self.x.set_value(feature)
+                    self.x.set_value(feature.reshape(self.x.dim))
 
                 label = np.mat(train_label[i]).T
                 self.y.set_value(label)
@@ -53,7 +53,7 @@ class Trainer:
                         x.set_value(feature)
                 else:
                     feature = np.mat(test_features[i]).T
-                    self.x.set_value(feature)
+                    self.x.set_value(feature.reshape(self.x.dim))
                 self.predict.forward()
                 pred.append(self.predict.value.A.ravel())
 

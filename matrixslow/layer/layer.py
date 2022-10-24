@@ -8,8 +8,11 @@ def dense(input_layer, input_size, size, activation=ReLU):
     weights = ms.core.Variable(dim=(size, input_size), trainable=True, init=True)
     bias = ms.core.Variable(dim=(size, 1), trainable=True, init=True)
     affine = ms.ops.Add(ms.ops.MatMul(weights, input_layer), bias)
-    value = activation(affine)
-    return value
+    if activation is None:
+        return affine
+    else:
+        value = activation(affine)
+        return value
 
 
 def conv(feature_maps, input_shape, kernel_size, kernel_shape, activation=ReLU):
@@ -26,5 +29,16 @@ def conv(feature_maps, input_shape, kernel_size, kernel_shape, activation=ReLU):
         channel_sum = ms.ops.Add(*channels)
         bias = ms.ops.ScalarMultiply(ms.core.Variable((1, 1), init=True, trainable=True), ones)
         affine = ms.ops.Add(channel_sum, bias)
-        outputs.append(activation(affine))
+        if activation is None:
+            outputs.append(affine)
+        else:
+            outputs.append(activation(affine))
+    return outputs
+
+
+def pooling(feature_maps, kernel_shape, stride):
+    outputs = []
+    for fm in feature_maps:
+        pool = ms.ops.MaxPooling(fm, size=kernel_shape, stride=stride)
+        outputs.append(pool)
     return outputs

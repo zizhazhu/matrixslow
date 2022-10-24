@@ -1,1 +1,1 @@
-from .layer import dense, conv
+from .layer import dense, conv, pooling

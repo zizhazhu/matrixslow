@@ -34,8 +34,8 @@ class Concat(Operator):
 
     def compute(self):
         self.value = np.concatenate(
-            [node.value for node in self.inputs], axis=self.axis,
-        )
+            [node.value.flatten() for node in self.inputs], axis=self.axis,
+        ).T
 
     def get_jacobi(self, input_node):
         dimensions = [p.dimension for p in self.inputs]
