@@ -23,5 +23,5 @@ batch_size = 64
 n_epochs = 30
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
-trainer = ms.train.Trainer(x, y, predict, optimizer)
-trainer.train_and_test(features, labels)
+trainer = ms.train.Trainer(optimizer, batch_size=batch_size, metric_ops=[ms.ops.metrics.Accuracy(predict, y)])
+trainer.train_and_test({x: features, y: one_hot_label})
