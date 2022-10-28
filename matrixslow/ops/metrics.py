@@ -58,3 +58,23 @@ class Accuracy(Metrics):
         self.value = self.correct_num / self.total_num
 
 
+class Precision(Metrics):
+    def __init__(self, *inputs, name='precision'):
+        super().__init__(*inputs, name=name)
+        self.true_pos_num = 0
+        self.pred_pos_num = 0
+
+    def init(self):
+        self.true_pos_num = 0
+        self.pred_pos_num = 0
+
+    def compute(self):
+        pred = Metrics.prob_to_label(self.inputs[0].value)
+        labels = self.inputs[1].value
+        self.pred_pos_num += np.sum(pred == 1)
+        self.true_pos_num += np.sum(np.multiply(pred, labels) == 1)
+        if self.pred_pos_num == 0:
+            self.value = 0
+        else:
+            self.value = self.true_pos_num / self.pred_pos_num
+
