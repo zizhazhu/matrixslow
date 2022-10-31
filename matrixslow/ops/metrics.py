@@ -72,7 +72,7 @@ class Precision(Metrics):
         pred = Metrics.prob_to_label(self.inputs[0].value)
         labels = self.inputs[1].value
         self.pred_pos_num += np.sum(pred == 1)
-        self.true_pos_num += np.sum(np.multiply(pred, labels) == 1)
+        self.true_pos_num += np.sum(pred == 1 and labels == 1)
         if self.pred_pos_num == 0:
             self.value = 0
         else:
@@ -129,8 +129,8 @@ class ROC(Metrics):
 
         for i in range(thresholds.size):
             pred = Metrics.prob_to_label(prob, thresholds[i])
-            self.true_pos_count[i] += np.sum(np.multiply(pred, labels) == 1)
-            self.false_pos_count[i] += np.sum(pred == 0 and labels == 1)
+            self.true_pos_count[i] += np.sum(pred == 1 and labels == 1)
+            self.false_pos_count[i] += np.sum(pred == 1 and labels == -1)
 
         if self.positive_count > 0 and self.negative_count > 0:
             self.tpr = self.true_pos_count / self.positive_count
@@ -147,8 +147,43 @@ class AUC(Metrics):
 
     def compute(self):
         self.roc.compute()
-        self.value = np.sum(self.roc.tpr[1:] - self.roc.tpr[:-1]) * self.roc.fpr[1:]
+        self.value = np.sum((self.roc.tpr[:-1] - self.roc.tpr[1:]) * (1 - self.roc.fpr[1:]))
 
     def value_str(self):
         return f"{self.__class__.__name__}: {self.value:.4f}"
+
+
+class F1Score(Metrics):
+    def __init__(self, *inputs, name='f1_score'):
+        super().__init__(*inputs, name=name)
+        self.true_pos_count = 0
+        self.positive_count = 0
+        self.pred_pos_count = 0
+
+    def init(self):
+        self.true_pos_count = 0
+        self.positive_count = 0
+        self.pred_pos_count = 0
+
+    def compute(self):
+        pred = Metrics.prob_to_label(self.inputs[0].value)
+        labels = self.inputs[1].value
+
+        self.positive_count += np.sum(labels == 1)
+        self.pred_pos_count += np.sum(pred == 1)
+        self.true_pos_count += np.sum(pred == 1 and labels == 1)
+
+        if self.pred_pos_count > 0:
+            precision = self.true_pos_count / self.pred_pos_count
+        else:
+            precision = 0.0
+        if self.positive_count > 0:
+            recall = self.true_pos_count / self.positive_count
+        else:
+            recall = 0.0
+
+        if precision + recall > 0:
+            self.value = 2 * precision * recall / (precision + recall)
+        else:
+            self.value = 0.0
 

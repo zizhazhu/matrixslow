@@ -18,5 +18,10 @@ batch_size = 16
 n_epochs = 50
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
-trainer = ms.train.Trainer(x, y, predict, optimizer)
-trainer.train_and_test(features, labels, n_epochs=n_epochs)
+
+trainer = ms.train.SimpleTrainer(optimizer, metric_ops=[ms.ops.metrics.Accuracy(predict, y),
+                                                        ms.ops.metrics.Precision(predict, y),
+                                                        ms.ops.metrics.AUC(predict, y),
+                                                        ])
+trainer.train_and_test(train_dict={x: features, y: labels}, test_dict={x: features, y: labels},
+                       n_epochs=n_epochs)

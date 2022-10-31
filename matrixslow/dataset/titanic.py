@@ -8,9 +8,9 @@ def gen_data(file='./data/titanic.csv'):
     label_encoder = LabelEncoder()
     onehot_encoder = OneHotEncoder(sparse=False)
 
-    pclass = onehot_encoder.fit_transform(label_encoder.fit_transform(data["Pclass"].fillna(0)).reshpae(-1, 1))
-    sex = onehot_encoder.fit_transform(label_encoder.fit_transform(data["Sex"].fillna(0)).reshpae(-1, 1))
-    embarked = onehot_encoder.fit_transform(label_encoder.fit_transform(data["Embarked"].fillna(0)).reshpae(-1, 1))
+    pclass = onehot_encoder.fit_transform(label_encoder.fit_transform(data["Pclass"].fillna(0)).reshape(-1, 1))
+    sex = onehot_encoder.fit_transform(label_encoder.fit_transform(data["Sex"].fillna(0)).reshape(-1, 1))
+    embarked = onehot_encoder.fit_transform(label_encoder.fit_transform(data["Embarked"].fillna(0)).reshape(-1, 1))
 
     features = np.concatenate([pclass,
                                sex,
