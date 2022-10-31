@@ -10,7 +10,6 @@ class Metrics(Node):
         super().__init__(name)
         self.inputs = list(inputs)
         self.set_output()
-        self.init()
 
     @abc.abstractmethod
     def init(self):
@@ -22,6 +21,7 @@ class Metrics(Node):
 
     @staticmethod
     def prob_to_label(prob, thresholds=0.5):
+        # probability to 0,1 label
         if prob.shape[0] > 1:
             labels = np.zeros((prob.shape[0], 1))
             labels[np.argmax(prob, axis=0)] = 1
@@ -33,7 +33,7 @@ class Metrics(Node):
         raise NotImplementedError()
 
     def value_str(self):
-        return f"{self.__class__.__name__}: {self.value:.4f}"
+        return f"{self.__class__.__name__}: {self.value:.4f} "
 
 
 class Accuracy(Metrics):
@@ -77,4 +77,78 @@ class Precision(Metrics):
             self.value = 0
         else:
             self.value = self.true_pos_num / self.pred_pos_num
+
+
+class Recall(Metrics):
+    def __init__(self, *inputs, name='recall'):
+        super().__init__(*inputs, name=name)
+        self.true_pos_num = 0
+        self.true_num = 0
+
+    def init(self):
+        self.true_pos_num = 0
+        self.true_num = 0
+
+    def compute(self):
+        pred = Metrics.prob_to_label(self.inputs[0].value)
+        labels = self.inputs[1].value
+        self.true_num += np.sum(labels == 1)
+        self.true_pos_num += np.sum(np.multiply(pred, labels) == 1)
+        if self.true_num == 0:
+            self.value = 0
+        else:
+            self.value = self.true_pos_num / self.true_num
+
+
+class ROC(Metrics):
+    def __init__(self, *inputs, count=100, name='roc'):
+        super().__init__(*inputs, name=name)
+        self.count = count
+        self.positive_count = 0
+        self.negative_count = 0
+        self.fpr = np.array([0.0] * count)
+        self.tpr = np.array([0.0] * count)
+        self.true_pos_count = np.array([0] * count)
+        self.false_pos_count = np.array([0] * count)
+
+    def init(self):
+        self.positive_count = 0
+        self.negative_count = 0
+        self.fpr = np.array([0.0] * self.count)
+        self.tpr = np.array([0.0] * self.count)
+        self.true_pos_count = np.array([0] * self.count)
+        self.false_pos_count = np.array([0] * self.count)
+
+    def compute(self):
+        prob = self.inputs[0].value
+        labels = self.inputs[1].value
+        self.positive_count += np.sum(labels == 1)
+        self.negative_count += np.sum(labels == -1)
+
+        thresholds = np.linspace(0, 1, self.count)
+
+        for i in range(thresholds.size):
+            pred = Metrics.prob_to_label(prob, thresholds[i])
+            self.true_pos_count[i] += np.sum(np.multiply(pred, labels) == 1)
+            self.false_pos_count[i] += np.sum(pred == 0 and labels == 1)
+
+        if self.positive_count > 0 and self.negative_count > 0:
+            self.tpr = self.true_pos_count / self.positive_count
+            self.fpr = self.false_pos_count / self.negative_count
+
+
+class AUC(Metrics):
+    def __init__(self, *inputs, name='auc'):
+        self.roc = ROC(*inputs, count=100)
+        super().__init__(*inputs, name=name)
+
+    def init(self):
+        self.roc.init()
+
+    def compute(self):
+        self.roc.compute()
+        self.value = np.sum(self.roc.tpr[1:] - self.roc.tpr[:-1]) * self.roc.fpr[1:]
+
+    def value_str(self):
+        return f"{self.__class__.__name__}: {self.value:.4f}"
 

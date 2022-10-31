@@ -24,6 +24,6 @@ n_epochs = 50
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
 trainer = ms.train.SimpleTrainer(optimizer, metric_ops=[ms.ops.metrics.Accuracy(predict, y),
-                                                        ms.ops.metrics.Precision(predict, y)])
+                                                        ms.ops.metrics.Precision(predict, y),])
 trainer.train_and_test(train_dict={x: features, y: one_hot_labels}, test_dict={x: features, y: one_hot_labels},
                        n_epochs=n_epochs)
