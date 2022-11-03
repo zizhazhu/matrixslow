@@ -70,13 +70,13 @@ class Precision(Metrics):
 
     def compute(self):
         pred = Metrics.prob_to_label(self.inputs[0].value)
-        labels = self.inputs[1].value
-        self.pred_pos_num += np.sum(pred == 1)
-        self.true_pos_num += np.sum(pred == 1 and labels == 1)
-        if self.pred_pos_num == 0:
-            self.value = 0
-        else:
-            self.value = self.true_pos_num / self.pred_pos_num
+        labels = np.array(self.inputs[1].value)
+        self.pred_pos_num += np.sum(pred == 1, axis=1)
+        self.true_pos_num += np.sum(np.logical_and(pred == labels, labels == 1), axis=1)
+        self.value = np.divide(self.true_pos_num, self.pred_pos_num)
+
+    def value_str(self):
+        return f"{self.__class__.__name__}: {self.value} "
 
 
 class Recall(Metrics):

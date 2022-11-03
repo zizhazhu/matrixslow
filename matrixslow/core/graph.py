@@ -11,4 +11,10 @@ class Graph:
     def add_node(self, node):
         self.nodes.append(node)
 
+    def get_node_by_name(self, name):
+        for node in self.nodes:
+            if node._name == name:
+                return node
+
+
 default_graph = Graph()

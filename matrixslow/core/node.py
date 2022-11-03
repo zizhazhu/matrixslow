@@ -4,15 +4,18 @@ import numpy as np
 
 from .graph import default_graph
 
+
 class Node:
 
-    def __init__(self, name='node'):
+    def __init__(self, name='node', need_save=True):
         self._name = name
         self.value = None
         self.grad = None
         self.inputs = []
         self.outputs = set()
         self._shape = None
+
+        self.need_save = need_save
 
         self.graph = default_graph
         self.graph.add_node(self)

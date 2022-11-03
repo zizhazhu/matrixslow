@@ -102,8 +102,8 @@ class Softmax(Operator):
         ep = np.power(np.e, a)
         return ep / np.sum(ep)
 
-    def __init__(self, a):
-        super().__init__()
+    def __init__(self, a, name='Softmax'):
+        super().__init__(name=name)
         self.inputs = [a]
         self.set_output()
 
