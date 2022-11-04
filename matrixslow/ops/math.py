@@ -18,6 +18,10 @@ class Add(Operator):
 
     def get_jacobi(self, input_node):
         return np.eye(self.dimension)
+
+    @property
+    def kwargs(self):
+        return {'name': self._name}
         
 
 class MatMul(Operator):
@@ -128,6 +132,10 @@ class ReLU(Operator):
     def get_jacobi(self, input_node):
         return np.diag(np.where(input_node.value.A1 >= 0, 1.0, self.slope))
 
+    @property
+    def kwargs(self):
+        return {'slope': self.slope, 'name': self._name}
+
 
 class Square(Operator):
 
@@ -229,8 +237,8 @@ class Convolve(Operator):
 
 class MaxPooling(Operator):
 
-    def __init__(self, *inputs, size, stride, name='max_pooling'):
-        super().__init__()
+    def __init__(self, *inputs, size=(2, 2), stride=(1, 1), name='max_pooling'):
+        super().__init__(name=name)
         self.inputs = inputs
         self._stride = tuple(stride)
         self._size = tuple(size)
@@ -271,6 +279,10 @@ class MaxPooling(Operator):
 
     def get_jacobi(self, input_node):
         return self.flag
+
+    @property
+    def kwargs(self):
+        return {'size': self._size, 'stride': self._stride, 'name': self._name}
 
 
 class ScalarMultiply(Operator):

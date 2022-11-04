@@ -49,21 +49,21 @@ class Saver:
         }
         graph_json = {}
         weights_dict = {}
-        for node in graph.nodes:
+        for name, node in graph.nodes.items():
             if not node.need_save:
                 continue
             node_json = {
                 'node_type': node.__class__.__name__,
-                'name': node._name,
+                'name': name,
                 'inputs': [input_node._name for input_node in node.inputs],
                 'outputs': [output_node._name for output_node in node.outputs],
-                'kargs': node.kargs,
+                'kwargs': node.kwargs,
             }
             if node.value is not None:
-                node_json['dim'] = node.value.dim
-            graph_json[node._name] = node_json
+                node_json['dim'] = node.value.shape
+            graph_json[name] = node_json
             if isinstance(node, ms.core.Variable):
-                weights_dict[node._name] = node.value
+                weights_dict[name] = node.value
 
         model_json['graph'] = graph_json
         model_file_path = os.path.join(self.save_path, 'model.json')

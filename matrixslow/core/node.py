@@ -7,8 +7,7 @@ from .graph import default_graph
 
 class Node:
 
-    def __init__(self, name='node', need_save=True):
-        self._name = name
+    def __init__(self, name=None, need_save=True):
         self.value = None
         self.grad = None
         self.inputs = []
@@ -18,7 +17,10 @@ class Node:
         self.need_save = need_save
 
         self.graph = default_graph
-        self.graph.add_node(self)
+        if name is None:
+            name = self.__class__.__name__
+        new_name = self.graph.add_node(self, name)
+        self._name = new_name
 
     def set_output(self):
         # 把当前节点标记到输入节点的输出节点
@@ -79,4 +81,7 @@ class Node:
             for output_unit in self.outputs:
                 output_unit.reset_values(recursive)
 
+    @property
+    def kwargs(self):
+        return {'name': self._name}
 

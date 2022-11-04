@@ -25,3 +25,12 @@ class Variable(Node):
     @property
     def shape(self):
         return self.dim
+
+    @property
+    def kwargs(self):
+        return {
+            'dim': self.dim,
+            'init': None,
+            'trainable': self.trainable,
+            'name': self._name,
+        }
