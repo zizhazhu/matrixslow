@@ -120,8 +120,8 @@ class Softmax(Operator):
 
 class ReLU(Operator):
 
-    def __init__(self, a, slope=0.1):
-        super().__init__()
+    def __init__(self, a, slope=0.1, name='Relu'):
+        super().__init__(name=name)
         self.inputs = [a]
         self.slope = slope
         self.set_output()

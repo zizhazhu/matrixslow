@@ -9,8 +9,8 @@ class LossFunction(Node):
 
 
 class PerceptionLoss(LossFunction):
-    def __init__(self, input_value):
-        super().__init__()
+    def __init__(self, input_value, name='perception_loss'):
+        super().__init__(name=name)
         self.inputs.append(input_value)
         self.set_output()
 
@@ -45,8 +45,8 @@ class LogLoss(LossFunction):
 
 class CrossEntropyWithSoftMax(LossFunction):
 
-    def __init__(self, logits, label):
-        super().__init__()
+    def __init__(self, logits, label, name='crossentropy_loss'):
+        super().__init__(name=name)
         self.inputs = [logits, label]
         self.set_output()
 

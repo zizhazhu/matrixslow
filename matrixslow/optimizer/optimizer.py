@@ -24,7 +24,7 @@ class Optimizer:
         self.graph.clear_jacobi()
         self.target.forward()
 
-        for node in self.graph.nodes:
+        for name, node in self.graph.nodes.items():
             # 反向传播遍历可训练的节点
             if isinstance(node, Variable) and node.trainable:
                 node.backward(self.target)

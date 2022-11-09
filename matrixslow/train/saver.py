@@ -31,7 +31,7 @@ class Saver:
         if node_type == 'Variable':
             return ms.core.Variable(**kwargs)
         else:
-            return ClassMining.get_instance_by_subclass_name(ms.core.Node, node_type)(inputs, **kwargs)
+            return ClassMining.get_instance_by_subclass_name(ms.core.Node, node_type)(*inputs, **kwargs)
 
     def save(self, graph=ms.core.default_graph, service_signature=None):
         # checkpoint's information
@@ -70,12 +70,11 @@ class Saver:
         with open(model_file_path, 'w') as f:
             json.dump(model_json, f, indent=4)
 
-        weights_file_path = os.path.join(self.save_path, 'weights.npy')
+        weights_file_path = os.path.join(self.save_path, 'weights')
         np.savez(weights_file_path, **weights_dict)
 
     def _restore_node(self, graph, model_json, weights_dict):
-        for i in range(len(model_json)):
-            node_json = model_json[i]
+        for k, node_json in model_json.items():
             node_name = node_json['name']
 
             weights = None
@@ -95,12 +94,11 @@ class Saver:
         with open(model_file_path, 'r') as f:
             model_json = json.load(f)
 
-        weights_file_path = os.path.join(self.save_path, 'weights.npy')
-        with open(weights_file_path, 'rb') as f:
-            weights_files = np.load(f)
-            for filename in weights_files.files:
-                weights_dict[filename] = weights_files[filename]
-            weights_files.close()
+        weights_file_path = os.path.join(self.save_path, 'weights.npz')
+        weights_files = np.load(weights_file_path)
+        for filename in weights_files.files:
+            weights_dict[filename] = weights_files[filename]
+        weights_files.close()
 
         graph_json = model_json['graph']
         self._restore_node(graph, graph_json, weights_dict)

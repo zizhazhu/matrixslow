@@ -17,9 +17,9 @@ predict = ms.ops.Softmax(logits, name='predict')
 
 loss = ms.ops.loss.CrossEntropyWithSoftMax(logits, y)
 
-learning_rate = 0.02
+learning_rate = 0.01
 batch_size = 8
-n_epochs = 5
+n_epochs = 40
 optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
 trainer = ms.train.SimpleTrainer(optimizer, metric_ops=[ms.ops.metrics.Accuracy(predict, y),
