@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package matrixslow.serving;
+
+service MatrixSlowServing {
+    rpc Predict(PredictRequest) returns (PredictResponse);
+}
+
+message Matrix {
+    repeated float value = 1;
+    repeated int32 dim = 2;
+}
+
+message PredictRequest {
+    repeated Matrix matrix = 1;
+}
+
+message PredictResponse {
+    repeated Matrix matrix = 1;
+}
