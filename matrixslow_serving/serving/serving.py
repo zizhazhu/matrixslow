@@ -8,6 +8,7 @@ from matrixslow_serving.proto.serving_pb2_grpc import MatrixSlowServingServicer
 import matrixslow_serving.proto.serving_pb2_grpc as serving_pb2_grpc
 import matrixslow_serving.proto.serving_pb2 as serving_pb2
 
+
 class MatrixSlowServingService(MatrixSlowServingServicer):
 
     def __init__(self, model_path):
@@ -15,7 +16,6 @@ class MatrixSlowServingService(MatrixSlowServingServicer):
         _, service = saver.load()
         self.input_node = ms.default_graph.get_node_by_name(service['input']['name'])
         self.output_node = ms.default_graph.get_node_by_name(service['output']['name'])
-        pass
 
     def Predict(self, request, context):
         matrices = MatrixSlowServingService.deserialize(request)
