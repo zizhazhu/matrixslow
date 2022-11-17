@@ -85,3 +85,7 @@ class Node:
     def kwargs(self):
         return {'name': self._name}
 
+    @property
+    def name(self):
+        return self._name
+
