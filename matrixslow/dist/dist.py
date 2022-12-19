@@ -3,6 +3,7 @@ import numpy as np
 from ..core import Node
 from .proto import common_pb2
 
+
 class DistCommon:
 
     @staticmethod
