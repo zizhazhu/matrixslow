@@ -6,6 +6,18 @@ import matrixslow as ms
 from matrixslow.dataset.iris_data import gen_data
 
 
+cluster_conf = {
+    "ps": [
+        "localhost:5000",
+    ],
+    "worker": [
+        "localhost:5001",
+        "localhost:5002",
+        "localhost:5003",
+    ]
+}
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--role', type=str)
@@ -34,9 +46,10 @@ def train(index):
     n_epochs = 40
     optimizer = ms.optimizer.Adam(ms.default_graph, loss, learning_rate)
 
-    trainer = ms.train.DistPSTrainer(optimizer, metric_ops=[ms.ops.metrics.Accuracy(predict, y),
-                                                            ms.ops.metrics.Precision(predict, y),
-                                                            ])
+    trainer = ms.train.DistPSTrainer(optimizer, cluster_conf=cluster_conf,
+                                     metric_ops=[ms.ops.metrics.Accuracy(predict, y),
+                                                 ms.ops.metrics.Precision(predict, y),
+                                                 ])
     trainer.train_and_test(train_dict={x: features, y: one_hot_labels}, test_dict={x: features, y: one_hot_labels},
                            n_epochs=n_epochs)
 
@@ -44,9 +57,11 @@ def train(index):
 def main():
     args = get_args()
     if args.role == 'ps':
-        pass
+        server = ms.dist.ps.ParameterServiceServer(cluster_conf, sync=True)
+        server.serve()
     else:
-        pass
+        worker_index = args.index
+        train(worker_index)
 
 
 if __name__ == '__main__':

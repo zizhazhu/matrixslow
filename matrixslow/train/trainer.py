@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 class Trainer:
 
-    def __init__(self, optimizer, batch_size=64, metric_ops=None):
+    def __init__(self, optimizer, batch_size=64, metric_ops=None, **kwargs):
         self.optimizer = optimizer
         self.batch_size = batch_size
         self.metric_ops = list(metric_ops)

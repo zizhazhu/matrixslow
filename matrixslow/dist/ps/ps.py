@@ -8,7 +8,7 @@ from ..dist import DistCommon
 from ..proto import parameter_server_pb2, parameter_server_pb2_grpc
 
 
-class ParameterServer(parameter_server_pb2_grpc.ParameterServiceServicer):
+class ParameterService(parameter_server_pb2_grpc.ParameterServiceServicer):
 
     def __init__(self, worker_num, sync=True):
         self.worker_num = worker_num
@@ -59,14 +59,14 @@ class ParameterServiceClient:
 class ParameterServiceServer:
 
     def __init__(self, cluster_conf, sync=True, max_workers=10):
-        self.worker_num = len(cluster_conf['workers'])
+        self.worker_num = len(cluster_conf['worker'])
         self.host = cluster_conf['ps'][0]
         self.sync = sync
         self.max_workers = max_workers
 
         self.server = grpc.server(ThreadPoolExecutor(max_workers=self.max_workers))
         parameter_server_pb2_grpc.add_ParameterServiceServicer_to_server(
-            ParameterServer(self.worker_num, self.sync), self.server)
+            ParameterService(self.worker_num, self.sync), self.server)
         self.server.add_insecure_port(self.host)
 
     def serve(self):

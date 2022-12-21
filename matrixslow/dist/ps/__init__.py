@@ -1,1 +1,1 @@
-from .ps import ParameterServer, ParameterServiceClient, ParameterServiceServer
+from .ps import ParameterService, ParameterServiceClient, ParameterServiceServer

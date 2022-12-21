@@ -8,7 +8,7 @@ class DistPSTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         Trainer.__init__(self, *args, **kwargs)
         cluster_conf = kwargs['cluster_conf']
-        ps_host = cluster_conf['ps_host']
+        ps_host = cluster_conf['ps'][0]
         self.ps_client = ps.ParameterServiceClient(ps_host)
 
     def _variable_weights_init(self):
