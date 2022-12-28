@@ -11,23 +11,111 @@ from ..proto import parameter_server_pb2, parameter_server_pb2_grpc
 class ParameterService(parameter_server_pb2_grpc.ParameterServiceServicer):
 
     def __init__(self, worker_num, sync=True):
+        self.node_gradients_cache = dict()
+        self.variable_weights_cache = dict()
+
+        self.sync = sync
         self.worker_num = worker_num
+        self.cur_push_num = 0
         self.cur_pull_num = self.worker_num
+
         self.cond = threading.Condition()
+        self.push_lock = threading.Lock()
+        self.init_lock = threading.Lock()
+        self.is_init = False
+
+        self.acc_no = 0
 
     def Push(self, request, context):
         node_with_gradients, acc_no = self._deserialize_push_req(request)
+        if self.sync:
+            self._push_sync(node_with_gradients, acc_no)
+        else:
+            self._push_async(node_with_gradients, acc_no)
+
+        return parameter_server_pb2.ParameterPushResp()
 
     def _push_sync(self, node_with_gradients, acc_no):
         if self.cond.acquire():
             while self.cur_pull_num != self.worker_num:
                 self.cond.wait()
 
+            self.cur_push_num += 1
+            self._update_node_gradients_cache(node_with_gradients)
+            self.acc_no += acc_no
+            if self.cur_push_num >= self.worker_num:
+                self.cur_pull_num = 0
+                self.cond.notify_all()
+            self.cond.release()
+        else:
+            self.cond.wait()
+
+    def _push_async(self, node_with_gradients, acc_no):
+        self.push_lock.acquire()
+        self._update_node_gradients_cache(node_with_gradients)
+        self.acc_no += acc_no
+        self.push_lock.release()
+
+    def _update_node_gradients_cache(self, node_with_gradients):
+        for node, gradients in node_with_gradients.items():
+            if node in self.node_gradients_cache:
+                self.node_gradients_cache[node] += gradients
+            else:
+                self.node_gradients_cache[node] = gradients
+
+    def Pull(self, request, context):
+        if self.sync:
+            resp = self._pull_sync()
+        else:
+            resp = self._pull_async()
+
+        return resp
+
+    def _pull_sync(self):
+        if self.cond.acquire():
+            while self.cur_pull_num != self.worker_num:
+                self.cond.wait()
+
+            self.cur_pull_num += 1
+            self._gradients_cache_mean()
+
+    def _gradients_cache_mean(self):
+        if self.acc_no != 0:
+            for node, gradients in self.node_gradients_cache.items():
+                self.node_gradients_cache[node] = gradients / self.acc_no
+            self.acc_no = 0
+
+    def _pull_async(self):
+        self.push_lock.acquire()
+        self._gradients_cache_mean()
+        resp = self._serialize_pull_resp()
+        self._reset_gradients_cache()
+        self.push_lock.release()
+        return resp
 
     def _deserialize_push_req(self, request):
         acc_no = request.node_gradients.acc_no
         node_with_gradients = DistCommon._deserialize_proto_node_gradients(request.node_gradients)
         return node_with_gradients, acc_no
+
+    def _serialize_pull_resp(self):
+        proto_node_gradients = DistCommon._serialize_proto_node_gradients(self.node_gradients_cache)
+        resp = parameter_server_pb2.ParameterPullResp(node_gradients=proto_node_gradients)
+        return resp
+
+    def _reset_gradients_cache(self):
+        self.node_gradients_cache.clear()
+    def VariableWeightsInit(self, request, context):
+        self.init_lock.acquire()
+        # choose the first worker to init
+        if not self.is_init:
+            self.variable_weights_cache = DistCommon._deserialize_proto_node_weights(request)
+            print('[INIT] Parameter service variable weights initialized')
+
+        resp = DistCommon._serialize_proto_node_weights(self.variable_weights_cache)
+        self.is_init = True
+        self.init_lock.release()
+        return resp
 
 
 class ParameterServiceClient:
