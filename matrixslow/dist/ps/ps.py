@@ -72,12 +72,22 @@ class ParameterService(parameter_server_pb2_grpc.ParameterServiceServicer):
         return resp
 
     def _pull_sync(self):
+        resp = None
         if self.cond.acquire():
             while self.cur_pull_num != self.worker_num:
                 self.cond.wait()
 
             self.cur_pull_num += 1
             self._gradients_cache_mean()
+            resp = self._serialize_pull_resp()
+            if self.cur_pull_num >= self.worker_num:
+                self.cur_push_num = 0
+                self._reset_gradients_cache()
+                self.cond.notify_all()
+            self.cond.release()
+        else:
+            self.cond.wait()
+        return resp
 
     def _gradients_cache_mean(self):
         if self.acc_no != 0:
@@ -94,27 +104,33 @@ class ParameterService(parameter_server_pb2_grpc.ParameterServiceServicer):
         return resp
 
     def _deserialize_push_req(self, request):
-        acc_no = request.node_gradients.acc_no
-        node_with_gradients = DistCommon._deserialize_proto_node_gradients(request.node_gradients)
+        acc_no = request.gradients.acc_no
+        node_with_gradients = DistCommon._deserialize_proto_node_gradients(request.gradients)
         return node_with_gradients, acc_no
 
     def _serialize_pull_resp(self):
         proto_node_gradients = DistCommon._serialize_proto_node_gradients(self.node_gradients_cache)
-        resp = parameter_server_pb2.ParameterPullResp(node_gradients=proto_node_gradients)
+        resp = parameter_server_pb2.ParameterPullResp(gradients=proto_node_gradients)
         return resp
 
     def _reset_gradients_cache(self):
         self.node_gradients_cache.clear()
+
     def VariableWeightsInit(self, request, context):
         self.init_lock.acquire()
         # choose the first worker to init
-        if not self.is_init:
-            self.variable_weights_cache = DistCommon._deserialize_proto_node_weights(request)
-            print('[INIT] Parameter service variable weights initialized')
+        try:
+            if not self.is_init:
+                self.variable_weights_cache = DistCommon._deserialize_proto_variable_weights(request)
+                print('[INIT] Parameter service variable weights initialized')
+        except Exception as e:
+            raise e
+        else:
+            resp = DistCommon._serialize_proto_variable_weights(self.variable_weights_cache)
+            self.is_init = True
+        finally:
+            self.init_lock.release()
 
-        resp = DistCommon._serialize_proto_node_weights(self.variable_weights_cache)
-        self.is_init = True
-        self.init_lock.release()
         return resp
 
 
@@ -133,14 +149,14 @@ class ParameterServiceClient:
     def push_gradients(self, acc_gradients, acc_no):
         proto_node_gradients = DistCommon._serialize_proto_node_gradients(acc_gradients)
         proto_node_gradients.acc_no = acc_no
-        push_req = parameter_server_pb2.ParameterPushReq(node_gradients=proto_node_gradients)
+        push_req = parameter_server_pb2.ParameterPushReq(gradients=proto_node_gradients)
         resp = self.stub.Push(push_req)
         return resp
 
     def pull_gradients(self, nodes_name=None):
         pull_req = parameter_server_pb2.ParameterPullReq()
         pull_resp = self.stub.Pull(pull_req)
-        node_gradients = DistCommon._deserialize_proto_node_gradients(pull_resp.node_gradients)
+        node_gradients = DistCommon._deserialize_proto_node_gradients(pull_resp.gradients)
         return node_gradients
 
 

@@ -12,8 +12,9 @@ class DistCommon:
         for node_name, gradients in node_gradients_dict.items():
             proto_node = proto_node_gradients.nodes.add()
             if isinstance(node_name, Node):
-                name = node_name.name
-            proto_node.name = name
+                proto_node.name = node_name.name
+            else:
+                proto_node.name = node_name
             proto_gradient = proto_node_gradients.gradients.add()
             proto_gradient.value.extend(np.array(gradients).flatten())
             proto_gradient.dim.extend(list(gradients.shape))
@@ -42,7 +43,7 @@ class DistCommon:
     def _serialize_proto_variable_weights(varibale_weights_dict):
         var_weights_req_resp = common_pb2.VariableWeightsReqResp()
         for name, mat in varibale_weights_dict.items():
-            var = var_weights_req_resp.variables.add()
+            var = var_weights_req_resp.nodes.add()
             if isinstance(name, Node):
                 name = name.name
             var.name = name
@@ -55,7 +56,7 @@ class DistCommon:
 
     @staticmethod
     def _deserialize_proto_variable_weights(variable_weights_req_resp):
-        proto_variables = variable_weights_req_resp.variables
+        proto_variables = variable_weights_req_resp.nodes
         proto_weights = variable_weights_req_resp.weights
 
         assert len(proto_variables) == len(proto_weights)

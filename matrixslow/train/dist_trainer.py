@@ -24,7 +24,7 @@ class DistPSTrainer(Trainer):
         print('[DistPSTrainer] Variable weights init done.')
 
     def _optimizer_update(self):
-        acc_gradients = self.optimizer.acc_gradients
+        acc_gradients = self.optimizer.acc_gradient
         self.ps_client.push_gradients(acc_gradients, self.optimizer.acc_no)
         node_gradients_dict = self.ps_client.pull_gradients()
         self.optimizer.update(node_gradients_dict)
